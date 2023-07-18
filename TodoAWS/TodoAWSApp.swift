@@ -27,6 +27,7 @@ struct TodoAWSApp: App {
         let dataStorePlugin = AWSDataStorePlugin(modelRegistration: AmplifyModels())
         do {
             try Amplify.add(plugin: dataStorePlugin)
+            Amplify.Logging.logLevel = .info
             try Amplify.configure()
             print("Initialized Amplify")
         } catch {

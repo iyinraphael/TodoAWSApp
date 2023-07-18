@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Amplify
 
 struct ContentView: View {
     var body: some View {
@@ -14,8 +15,23 @@ struct ContentView: View {
                 .imageScale(.large)
                 .foregroundColor(.accentColor)
             Text("Hello, world!")
+                .task {
+                    await performOnAppear()
+                }
         }
         .padding()
+    }
+    
+    func performOnAppear() async {
+        do {
+            let item = Todo(name: "Finish quarterly taxes",
+                            priority: .high,
+                            description: "Taxes are due for the quarter next week")
+            let saveItem = try await Amplify.DataStore.save(item)
+            print("Saved item: \(saveItem.name)")
+        } catch {
+            print("Could not save item to DataStore: \(error)")
+        }
     }
 }
 
