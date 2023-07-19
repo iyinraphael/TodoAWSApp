@@ -18,13 +18,26 @@ struct ContentView: View {
                 .foregroundColor(.accentColor)
             Text(name)
                 .task {
-                    await performDelete()
+                    await performOnAppear()
                 }
         }
         .padding()
     }
-    
     func performOnAppear() async {
+        await subscribeTodos()
+    }
+    
+    func performCreate() async {
+        do {
+            let todo = Todo(name: "Build iOS Application", description: "Buid an iOS application")
+            let savedTodo = try await Amplify.DataStore.save(todo)
+            print("Created item: \(savedTodo.name)")
+        } catch {
+            print("Unable to perform operation: \(error)")
+        }
+    }
+    
+    func performQuery() async {
         do {
             let todos = try await Amplify.DataStore.query(Todo.self, where: Todo.keys.priority.eq(Priority.high))
             for todo in todos {
@@ -71,6 +84,33 @@ struct ContentView: View {
             print("Updated item: \(toDeleteTodo.name)")
         } catch {
             print("Unable to perform operation: \(error)")
+        }
+    }
+    
+    func subscribeTodos() async {
+        do {
+            let mutationEvents = Amplify.DataStore.observe(Todo.self)
+            for try await mutationEvent in mutationEvents {
+                print("Subscription got this value: \(mutationEvent)")
+                do {
+                    let todo = try mutationEvent.decodeModel(as: Todo.self)
+                    
+                    switch mutationEvent.mutationType {
+                    case "create":
+                        print("Created: \(todo)")
+                    case "update":
+                        print("Updated: \(todo)")
+                    case "delete":
+                        print("Deleted: \(todo)")
+                    default:
+                        break
+                    }
+                } catch {
+                    print("Model could not be decoded: \(error)")
+                }
+            }
+        } catch {
+            print("Unable to observe mutation events")
         }
     }
 
