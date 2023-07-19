@@ -18,7 +18,7 @@ struct TodoAWSApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(name: "hello")
         }
     }
     
